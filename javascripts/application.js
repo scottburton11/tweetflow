@@ -1,4 +1,5 @@
 var lastOpened = null;
+var WEBSOCKET_HOST = "";
 
 var infoTemplate = "<div class='tweet-bubble'><img src='<%= user.profile_image_url %>' alt='<%= user.username %>' align='left'/><div><strong><%= user.name %></strong><div><%= text %></div></div></div>";
 var tweetTemplate = "<div class='img-col'><img src='<%= user.profile_image_url %>'/></div><div class='tweet-col'><strong><%= user.screen_name %></strong>&nbsp;<%= text %></div><div class='clear'></div>"
@@ -133,7 +134,7 @@ $(function(){
   google.maps.event.addListener(window.map, "dragend", setWindowBounds);
   google.maps.event.addListener(window.map, "bounds_changed", setWindowBounds);
 
-  window.ws = new WebSocket("ws://107.20.197.33:8080")
+  window.ws = new WebSocket("ws://"+WEBSOCKET_HOST+":8080")
 
   ws.onmessage = function(msg) {
 
