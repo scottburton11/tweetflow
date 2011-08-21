@@ -1,0 +1,112 @@
+#main {
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+html {
+  height: 100%
+}
+
+body {
+  height: 100%;
+  font: 100% "Lucida Grande", "Trebuchet MS", Verdana, sans-serif;
+}
+
+.tweet-bubble {
+  width: 280px;
+  min-height: 75px;
+  padding: 11px;
+  font-size: 13px;
+}
+
+.tweet-bubble strong {
+  font-size: 13px;
+}
+
+.tweet-bubble img {
+  margin-right: 5px;
+  margin-bottom: 3px;
+}
+
+.tweet {
+  margin: 4px;
+  padding: 5px;
+  
+
+  background-color: #FFFFFF;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#DDDDDD)); 
+  background-image: -webkit-linear-gradient(top, #FFFFFF, #DDDDDD); 
+  background-image:    -moz-linear-gradient(top, #FFFFFF, #DDDDDD); 
+  background-image:     -ms-linear-gradient(top, #FFFFFF, #DDDDDD); 
+  background-image:      -o-linear-gradient(top, #FFFFFF, #DDDDDD); 
+  background-image:         linear-gradient(top, #FFFFFF, #DDDDDD);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#FFFFFF', EndColorStr='#DDDDDD'); 
+
+
+     -moz-box-shadow: 0px 0px 4px #ffffff; 
+  -webkit-box-shadow: 0px 0px 4px #ffffff; 
+          box-shadow: 0px 0px 4px #ffffff; 
+
+  border: 2px solid #AAA;
+
+
+     -moz-border-radius: 3px; 
+  -webkit-border-radius: 3px; 
+          border-radius: 3px; 
+
+
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; 
+
+  font-size: 12px;
+  width: 280px;
+}
+
+.tweet strong {
+  
+}
+
+.tweet img {
+  width: 50px;
+}
+
+.tweet .img-col {
+  float: left;
+  width: 48px;
+}
+
+.tweet .tweet-col {
+  float: left;
+  width: 200px;
+  padding: 8px;
+}
+
+.clear {
+  clear: both;
+}
+
+#tweetbar {
+  position: absolute;
+  width: 310px;
+  height: 500px;
+  left: 20px;
+  bottom: 20px;
+  padding: 7px;
+  z-index: 99;
+
+
+  background-color: transparent;
+  background-color: rgba(190, 190, 190, 0.6);  
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99BEBEBE,endColorstr=#99BEBEBE); 
+            zoom: 1;
+
+  border-radius: 20px;
+  overflow: auto;
+  list-style: none;
+  text-indent: 0px;
+}
+
