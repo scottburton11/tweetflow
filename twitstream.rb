@@ -50,20 +50,31 @@ class Tweet
     data.to_json(*args)
   end
 
+  def locatable?
+    coordinates && point?
+  end
+
+  def location
+    data['coordinates']
+  end
+
+  def coordinates
+    location && location['coordinates']
+  end
+
   def point?
-    data['coordinates'] && data['coordinates']['type'] == "Point"
+    location['type'] == "Point"
   end
 
   def latitude
-    data['coordinates']['coordinates'][1].to_f if data['coordinates']['coordinates']
+    coordinates[1].to_f
   end
 
   def longitude
-    data['coordinates']['coordinates'][0].to_f if data['coordinates']['coordinates']
+    coordinates[0].to_f
   end
 
   def within?(bounds)
-    return false unless point?
     return false unless bounds.all?
     latitude > bounds[0] && longitude > bounds[1] && latitude < bounds[2] && longitude < bounds[3]
   end
@@ -102,10 +113,10 @@ EM.run do
       sid = nil
       ws.onmessage do |msg|
         channel.unsubscribe(sid) if sid
-        bounds = msg.scan(/([\d\-\.]+)/).map(&:first).map(&:to_f)
+        bounds = msg.scan(/([\d\-\.]+)/).map{|c| c.first.to_f}
         sid = channel.subscribe do |tweet|
           EM.next_tick do
-            ws.send tweet.to_json if tweet.within?(bounds)
+            ws.send tweet.to_json if tweet.locatable? && tweet.within?(bounds)
           end
         end
       end
