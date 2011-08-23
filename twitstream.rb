@@ -4,7 +4,7 @@ require 'eventmachine'
 require 'em-websocket'
 require 'em-http-request'
 require 'em-http/middleware/oauth'
-
+require 'json'
 
 ################# 
 # Configuration #
@@ -39,6 +39,36 @@ body = {:locations => (us + eu).join(",") }
 # 
 #body = {:track => "#houcodecamp" }
 
+class Tweet
+
+  attr_reader :data
+  def initialize(hash)
+    @data = hash
+  end
+
+  def to_json(*args)
+    data.to_json(*args)
+  end
+
+  def point?
+    data['coordinates'] && data['coordinates']['type'] == "Point"
+  end
+
+  def latitude
+    data['coordinates']['coordinates'][1].to_f if data['coordinates']['coordinates']
+  end
+
+  def longitude
+    data['coordinates']['coordinates'][0].to_f if data['coordinates']['coordinates']
+  end
+
+  def within?(bounds)
+    return false unless point?
+    return false unless bounds.all?
+    latitude > bounds[0] && longitude > bounds[1] && latitude < bounds[2] && longitude < bounds[3]
+  end
+end
+
 ################# 
 # Main Run Loop #
 #################
@@ -61,29 +91,30 @@ EM.run do
     end
     buffer << chunk
     while line = buffer.slice!(/(.*)\r\n/) do
-      channel.push(line)
+      channel.push(Tweet.new(JSON.parse(line)))
     end
   }
 
   EM::WebSocket.start(:host => "0.0.0.0", :port => "8080") do |ws|
 
-    sid = nil
 
     ws.onopen do
+      sid = nil
       ws.onmessage do |msg|
-        puts msg
+        channel.unsubscribe(sid) if sid
+        bounds = msg.scan(/([\d\-\.]+)/).map(&:first).map(&:to_f)
+        sid = channel.subscribe do |tweet|
+          EM.next_tick do
+            ws.send tweet.to_json if tweet.within?(bounds)
+          end
+        end
       end
       ws.onclose do
         channel.unsubscribe(sid)
       end
-      sid = channel.subscribe do |msg|
-        EM.next_tick do
-          ws.send msg
-        end
-      end
     end
   end
 
-  Signal.trap("INT")  { http.unbind; channel.unsubscribe(sid) if sid; EM.stop }
-  Signal.trap("TERM") { http.unbind; channel.unsubscribe(sid) if sid; EM.stop }
+  Signal.trap("INT")  { http.unbind;  EM.stop }
+  Signal.trap("TERM") { http.unbind;  EM.stop }
 end

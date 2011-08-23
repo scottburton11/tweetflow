@@ -108,6 +108,11 @@ function addTweet(json) {
   tweets.add(tweet);
 };
 
+function handleMapMove(){
+  setWindowBounds();
+  window.ws.send(window.map.getBounds());
+}
+
 function setWindowBounds () {
   var bounds = map.getBounds()
   window.slat = bounds.getSouthWest().lat();
@@ -131,27 +136,23 @@ $(function(){
     mapTypeId: google.maps.MapTypeId.ROADMAP
     });
 
-  google.maps.event.addListener(window.map, "dragend", setWindowBounds);
-  google.maps.event.addListener(window.map, "bounds_changed", setWindowBounds);
-
   window.ws = new WebSocket("ws://"+WEBSOCKET_HOST+":8080")
+
+  ws.onopen = function(){
+    // Send the map bounds to start getting Tweets
+    ws.send(map.getBounds());
+    google.maps.event.addListener(window.map, "dragend", handleMapMove);
+    google.maps.event.addListener(window.map, "bounds_changed", handleMapMove);
+  }
 
   ws.onmessage = function(msg) {
 
     var json = JSON.parse(msg.data);
-    
-    if (json.coordinates !== undefined && json.coordinates !== null && json.coordinates.type === "Point") {
-
-      if (withinMapView(json.coordinates.coordinates)) {
-        addTweet(json);
-      }
-    }
+    addTweet(json);
   };
-  
+
   window.tweetsView = new TweetsView({
     collection: tweets
   });
-  
-  // tweetsView.render();
-  
+
 });
