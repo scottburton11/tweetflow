@@ -39,6 +39,8 @@ var TweetView = Backbone.View.extend({
   
   render: function(){
     $(this.el).html(this.template(this.model.toJSON())).fadeIn(200);
+    var $this = this;
+    $(this.el).click(function(){$this.showInfoWindow()});
     return this;
   },
   
@@ -68,7 +70,8 @@ var TweetView = Backbone.View.extend({
     if (lastOpened != null) {
       lastOpened.close();
     };
-    this.infoWindow.open(map, this.marker);
+    this.infoWindow.open(window.map, this.marker);
+    window.map.panTo(this.marker.getPosition());
     lastOpened = this.infoWindow;
   }
 });
@@ -84,10 +87,12 @@ var TweetsView = Backbone.View.extend({
     var tweetView = new TweetView({
       model: tweet
     });
-    
+    //$(tweetView.el).click(function() {
+    //  tweetView.showInfoWindow();
+    //});
     $("#tweetbar").prepend(tweetView.render().el);
     tweetView.placeMarker(map);
-  }        
+  }
 });
 
 tweets = new Tweets();
