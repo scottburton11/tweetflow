@@ -4,6 +4,7 @@ require 'eventmachine'
 require 'em-websocket'
 require 'em-http-request'
 require 'em-http/middleware/oauth'
+require 'em-mongo'
 require 'json'
 
 ################# 
@@ -18,6 +19,12 @@ OAuthConfig = {
 }
 
 stream_uri = "http://stream.twitter.com/1/statuses/filter.json"
+
+MONGODB_HOST = "localhost"
+MONGODB_DATABASE = "twitstream"
+
+HUNDRED_MB = 104857600
+TEN_MB = 10485760
 
 # Four geographic US areas
 # 
@@ -76,7 +83,7 @@ class Tweet
 
   def within?(bounds)
     return false unless bounds.all?
-    latitude > bounds[0] && longitude > bounds[1] && latitude < bounds[2] && longitude < bounds[3]
+    latitude > bounds[0] && longitude > bounds[1] && latitude < bounds[2] && longitude < bounds[3] rescue false
   end
 end
 
@@ -106,14 +113,32 @@ EM.run do
     end
   }
 
+  db = EM::Mongo::Connection.new(MONGODB_HOST).db(MONGODB_DATABASE)
+  coll = db.collection("tweets")
+  db.command({"convertToCapped" => "tweets", "size" => TEN_MB})
+  coll.create_index([["coordinates.coordinates", EM::Mongo::GEO2D]])
+
+
+  msid = channel.subscribe do |tweet|
+    coll.insert(tweet.data)
+  end
+
   EM::WebSocket.start(:host => "0.0.0.0", :port => "8080") do |ws|
-
-
     ws.onopen do
       sid = nil
+
       ws.onmessage do |msg|
         channel.unsubscribe(sid) if sid
         bounds = msg.scan(/([\d\-\.]+)/).map{|c| c.first.to_f}
+        tbounds = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
+        coll.find({"coordinates.coordinates" => {"$within" => {"$box" => tbounds}}}).limit(10).each do |doc|
+          if doc
+            tweet = Tweet.new(doc)
+            ws.send(tweet.to_json) if tweet.coordinates && tweet.point?
+          end
+        end
+
+
         sid = channel.subscribe do |tweet|
           EM.next_tick do
             ws.send tweet.to_json if tweet.locatable? && tweet.within?(bounds)

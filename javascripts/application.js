@@ -1,5 +1,5 @@
 var lastOpened = null;
-var WEBSOCKET_HOST = "";
+var WEBSOCKET_HOST = "0.0.0.0";
 
 var infoTemplate = "<div class='tweet-bubble'><img src='<%= user.profile_image_url %>' alt='<%= user.username %>' align='left'/><div><strong><%= user.name %></strong><div><%= text %></div></div></div>";
 var tweetTemplate = "<div class='img-col'><img src='<%= user.profile_image_url %>'/></div><div class='tweet-col'><strong><%= user.screen_name %></strong>&nbsp;<%= text %></div><div class='clear'></div>"
@@ -87,9 +87,6 @@ var TweetsView = Backbone.View.extend({
     var tweetView = new TweetView({
       model: tweet
     });
-    //$(tweetView.el).click(function() {
-    //  tweetView.showInfoWindow();
-    //});
     $("#tweetbar").prepend(tweetView.render().el);
     tweetView.placeMarker(map);
   }
@@ -107,14 +104,26 @@ function addTweet(json) {
   var tweet = new Tweet({
     text: json.text,
     latlng: json.coordinates,
-    user: json.user
+    user: json.user,
+    id: json.id
   });
 
-  tweets.add(tweet);
+  var included = tweets.detect(function(tweet) { return tweet.id === json.id });
+  if (!included) {
+    tweets.add(tweet);
+  }
 };
+
+function cleanUpTweets() {
+  var remove_tweets = tweets.reject(function(tweet) { 
+    return withinMapView(tweet.get("latlng").coordinates);
+  });
+  tweets.remove(remove_tweets);
+}
 
 function handleMapMove(){
   setWindowBounds();
+  cleanUpTweets();
   window.ws.send(window.map.getBounds());
 }
 
@@ -146,8 +155,9 @@ $(function(){
   ws.onopen = function(){
     // Send the map bounds to start getting Tweets
     ws.send(map.getBounds());
-    google.maps.event.addListener(window.map, "dragend", handleMapMove);
-    google.maps.event.addListener(window.map, "bounds_changed", handleMapMove);
+    //google.maps.event.addListener(window.map, "dragend", handleMapMove);
+    //google.maps.event.addListener(window.map, "zoom_changed", handleMapMove);
+    google.maps.event.addListener(window.map, "idle", handleMapMove);
   }
 
   ws.onmessage = function(msg) {
