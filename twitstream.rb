@@ -88,6 +88,10 @@ class Tweet
     return false unless bounds.all?
     latitude > bounds[0] && longitude > bounds[1] && latitude < bounds[2] && longitude < bounds[3] rescue false
   end
+
+  def to_json(options={})
+    {:text => data['text'], :coordinates => data['coordinates'], :user => data['user'], :id => data['id']}.to_json(options)
+  end
 end
 
 ################# 
