@@ -6,6 +6,7 @@ require 'em-http-request'
 require 'em-http/middleware/oauth'
 require 'em-mongo'
 require 'json'
+require 'logger'
 
 ################# 
 # Configuration #
@@ -41,6 +42,8 @@ TEN_MB = 10485760
 us = [-143.97991933750006, 19.390800025582905, -47.476013087500064, 60.15071794869914]
 eu = [-25.942809962500064, 30.132630020114565, 43.754455662499936,  58.301896604717285]
 body = {:locations => (us + eu).join(",") }
+
+@logger = Logger.new("twitstream.log")
 
 # Just track the #houcodecamp hashtag
 # 
@@ -92,6 +95,7 @@ end
 #################
 
 EM.run do
+  @logger.info("Starting run loop")
 
   request = EventMachine::HttpRequest.new(stream_uri)
   request.use EventMachine::Middleware::OAuth, OAuthConfig
@@ -103,9 +107,11 @@ EM.run do
   
   http.stream {|chunk|
     if chunk =~ /Error 401 UNAUTHORIZED/
-      puts chunk
+      @logger.warn chunk
       http.unbind
       EM.stop
+      @logger.warn "Error, exiting"
+      exit(false)
     end
     buffer << chunk
     while line = buffer.slice!(/(.*)\r\n/) do
@@ -128,13 +134,18 @@ EM.run do
       sid = nil
 
       ws.onmessage do |msg|
+        @logger.info msg
+        params = JSON.parse(msg)
         channel.unsubscribe(sid) if sid
-        bounds = msg.scan(/([\d\-\.]+)/).map{|c| c.first.to_f}
+        bounds = params['bounds']
         tbounds = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
-        coll.find({"coordinates.coordinates" => {"$within" => {"$box" => tbounds}}}).limit(10).each do |doc|
-          if doc
-            tweet = Tweet.new(doc)
-            ws.send(tweet.to_json) if tweet.coordinates && tweet.point?
+        limit = params['limit']
+        if limit.kind_of?(Numeric) && limit > 0
+          coll.find({"coordinates.coordinates" => {"$within" => {"$box" => tbounds}}}).limit(limit).each do |doc|
+            if doc
+              tweet = Tweet.new(doc)
+              ws.send(tweet.to_json) if tweet.coordinates && tweet.point?
+            end
           end
         end
 
@@ -151,6 +162,6 @@ EM.run do
     end
   end
 
-  Signal.trap("INT")  { http.unbind;  EM.stop }
-  Signal.trap("TERM") { http.unbind;  EM.stop }
+  Signal.trap("INT")  { @logger.info("Caught INT, exiting"); http.unbind;  EM.stop }
+  Signal.trap("TERM") { @logger.info("Caught TERM, exiting"); http.unbind;  EM.stop }
 end
