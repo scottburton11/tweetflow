@@ -164,6 +164,40 @@ function withinMapView(coordinates) {
   };
 };
 
+function websocket_instance(host) {
+  if (window.hasOwnProperty("MozWebSocket")) {
+    return new MozWebSocket(host);
+  } else if (window.hasOwnProperty("WebSocket")){
+    return new WebSocket(host);
+  };
+}
+
+function initiateWebSocket() {
+  var ws = websocket_instance("ws://"+WEBSOCKET_HOST+":8080")
+
+  ws.onopen = function(){
+    setWindowBounds();
+    requestTweets();
+    google.maps.event.addListener(window.map, "idle", handleMapMove);
+  }
+
+  ws.onmessage = function(msg) {
+    var json = JSON.parse(msg.data);
+    addTweet(json);
+  };
+
+  return ws;
+}
+
+function browserSupported() {
+  return Modernizr.websockets
+}
+
+function dissapointUser() {
+  var msg = "Sorry, TweetFlow doesn't support your browser."
+  console.log(msg)
+}
+
 $(function(){
   window.map = new google.maps.Map(document.getElementById("map"), {
     center: new google.maps.LatLng(30.284540, -97.7933959),
@@ -175,23 +209,14 @@ $(function(){
     console.log("Loaded");
     google.maps.event.removeListener(loaded_event);
 
-    window.ws = new WebSocket("ws://"+WEBSOCKET_HOST+":8080")
-
-    ws.onopen = function(){
-      setWindowBounds();
-      requestTweets();
-      google.maps.event.addListener(window.map, "idle", handleMapMove);
-    }
-
-    ws.onmessage = function(msg) {
-
-      var json = JSON.parse(msg.data);
-      addTweet(json);
+    if (browserSupported()) {
+      window.ws = initiateWebSocket();
+      window.tweetsView = new TweetsView({
+        collection: tweets
+      });
+    } else {
+      dissapointUser();
     };
-
-    window.tweetsView = new TweetsView({
-      collection: tweets
-    });
   });
 
 });
