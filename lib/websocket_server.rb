@@ -20,7 +20,7 @@ path = File.expand_path(File.join(File.expand_path(__FILE__), "..", "..", "tmp",
 
 context = EM::ZeroMQ::Context.new(1)
 
-@logger = Logger.new(File.expand_path("./log/twitstream.log"))
+@logger = Logger.new(File.expand_path("./log/tweetflow.log"))
 
 class TweetHandler
   attr_reader :logger

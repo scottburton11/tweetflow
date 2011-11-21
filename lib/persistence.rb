@@ -15,7 +15,7 @@ ONE_GB = 1048576000
 HUNDRED_MB = 104857600
 TEN_MB = 10485760
 
-@logger = Logger.new(File.expand_path("./log/twitstream.log"))
+@logger = Logger.new(File.expand_path("./log/tweetflow.log"))
 
 class TweetHandler
   attr_reader :logger

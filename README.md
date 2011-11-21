@@ -1,8 +1,10 @@
-Twitstream
+Tweetflow
 ==========
-A sample application that visualizes the Twitter stream using EventMachine, WebSockets, Google Maps, Backbone.js and oh, what the hell, MongoDB. 
+A sample application that visualizes the Twitter stream using EventMachine, WebSockets, ZeroMQ, Google Maps, Backbone.js and oh, what the hell, MongoDB. 
 
 _(Just kidding, no MongoDB)_
+
+_(Just kidding, now with MongoDB!)_
 
 Why?
 ----
@@ -16,7 +18,7 @@ If you haven't yet, create a Twitter application on [Twitter's developer site]("
 
 Export your consumer key, consumer secret, access token and access token secret as environmental variables `API_KEY`, `API_SECRET`, `TOKEN_KEY` and `TOKEN_SECRET`. 
 
-Run the server with `ruby twitstream.rb`, and copy `index.html`, `/javascripts` and `/stylesheets` to a webserver-accessible location.
+Run the server with `foreman start`, and copy `index.html`, `/javascripts` and `/stylesheets` to a webserver-accessible location.
 
 Warnings
 --------

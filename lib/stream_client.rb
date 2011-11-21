@@ -41,7 +41,7 @@ hawaii = [-163.42572011875006, 15.005117430141318, -152.17572011875006, 24.44399
 south_america = [-111.38348379062506, -56.2513788813518, -21.383483790625064, 11.896213541337962]
 body = {:locations => (us + eu).join(",") }
 
-@logger = Logger.new(File.expand_path("./log/twitstream.log"))
+@logger = Logger.new(File.expand_path("./log/tweetflow.log"))
 
 module Publisher
   def on_writable
