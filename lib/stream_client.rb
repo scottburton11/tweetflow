@@ -39,7 +39,7 @@ asia = [85.63433847499994, -21.71169169171561, 175.63433847499994, 50.1113117575
 south_pacific = [96.26910409999994, -51.681515962670716, -173.73089590000006, 19.38043655632485]
 hawaii = [-163.42572011875006, 15.005117430141318, -152.17572011875006, 24.443995739883658]
 south_america = [-111.38348379062506, -56.2513788813518, -21.383483790625064, 11.896213541337962]
-body = {:locations => (us + eu).join(",") }
+body = {:locations => (us + eu + asia + south_asia + south_pacific + hawaii + south_america).join(",") }
 
 @logger = Logger.new(File.expand_path("./log/tweetflow.log"))
 
