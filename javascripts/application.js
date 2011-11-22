@@ -1,5 +1,6 @@
 var lastOpened = null;
-var WEBSOCKET_HOST = "0.0.0.0";
+var WEBSOCKET_HOST = "tweetflow.info";
+var MAX_TWEETS = 30;
 
 var infoTemplate = "<div class='tweet-bubble'><img src='<%= user.profile_image_url %>' alt='<%= user.username %>' align='left'/><div><strong><%= user.name %></strong><div><%= text %></div></div></div>";
 var tweetTemplate = "<div class='img-col'><img src='<%= user.profile_image_url %>'/></div><div class='tweet-col'><strong><%= user.screen_name %></strong>&nbsp;<%= text %></div><div class='clear'></div>"
@@ -38,7 +39,7 @@ var TweetView = Backbone.View.extend({
   },
   
   render: function(){
-    $(this.el).html(this.template(this.model.toJSON())).fadeIn(200);
+    $(this.el).html(this.template(this.model.toJSON()));
     var $this = this;
     $(this.el).click(function(){$this.showInfoWindow()});
     return this;
@@ -95,7 +96,7 @@ var TweetsView = Backbone.View.extend({
 tweets = new Tweets();
 
 tweets.bind("add", function(tweet){
-  if (tweets.length > 25) {
+  if (tweets.length > MAX_TWEETS) {
     tweets.remove(tweets.first());
   };
 });
@@ -143,7 +144,7 @@ function requestTweets(){
   //window.ws.send(window.map.getBounds());
   var request = {
     bounds: [window.slat, window.wlng, window.nlat, window.elng],
-    limit: 25 - tweets.length
+    limit: MAX_TWEETS - tweets.length
   }
   window.ws.send(JSON.stringify(request));
 }
@@ -198,25 +199,99 @@ function dissapointUser() {
   console.log(msg)
 }
 
+function bootstrap() {
+
+  // if (Modernizr.geolocation) {
+  //   geolocate();
+  // } else {
+  //   startTweetFlow();
+  // };
+
+  startTweetFlow();
+  
+  window.tweetsView = new TweetsView({
+    collection: tweets
+  });
+}
+
+function geolocate(){
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      navigateToCoordinates([position.coords.latitude, position.coords.longitude]);
+    },
+    function(error) {
+      startTweetFlow();
+    }
+  );
+}
+
+function assignWebSocket() {
+  window.ws = initiateWebSocket();
+}
+
+function startTweetFlow(callback){
+  loaded_event = google.maps.event.addListener(window.map, "tilesloaded", function(){
+    console.log("Loaded");
+    google.maps.event.removeListener(loaded_event);
+    if (callback && typeof(callback) === "function") {
+      callback.call();
+    };
+    assignWebSocket();
+  });
+}
+
+function stopTweetFlow(){
+  window.ws.close();
+}
+
+function navigateClick(event){
+  var city = $(event.target).attr("data-location");
+  if (!(city === undefined)) {
+    var coordinates = coordinatesList[city];
+    navigateToCoordinates(coordinates);    
+  }
+};
+
+var coordinatesList = {
+  "los-angeles": [33.77740919605361, -117.95605459140626],
+  "houston": [29.670128669804495, -95.37640371250001],
+  "seattle": [47.59155698249811, -122.29290761875001],
+  "maui": [20.790753080390292, -156.34915151523438],
+  "tokyo": [35.7041217738303, -220.21130361484379],
+  "hong-kong": [22.440196733153556, -245.82318105625004],
+  "new-york": [40.792735274749475, -73.89263906406254],
+  "london": [51.504449194741255, -0.12905874179691246]
+}
+
+function navigateToCoordinates(coordinates) {
+  stopTweetFlow();
+  var latLng = new google.maps.LatLng(coordinates[0], coordinates[1]);
+  window.map.setZoom(10);
+  window.map.panTo(latLng);
+  
+  startTweetFlow(handleMapMove)
+}
+
+function handleNavClick(event) {
+  $("ul#nav li").removeClass("active");
+  $(this).addClass("active");
+  navigateClick(event);
+}
+
 $(function(){
   window.map = new google.maps.Map(document.getElementById("map"), {
     center: new google.maps.LatLng(30.284540, -97.7933959),
     zoom: 4,
     mapTypeId: google.maps.MapTypeId.ROADMAP
-    });
-
-  loaded_event = google.maps.event.addListener(window.map, "tilesloaded", function(){
-    console.log("Loaded");
-    google.maps.event.removeListener(loaded_event);
-
-    if (browserSupported()) {
-      window.ws = initiateWebSocket();
-      window.tweetsView = new TweetsView({
-        collection: tweets
-      });
-    } else {
-      dissapointUser();
-    };
   });
 
+  if (browserSupported()) {
+    // startTweetFlow();
+    bootstrap();
+  } else {
+    dissapointUser();
+  };
+  
+  $("ul#nav").on("click", "li", handleNavClick)
+  
 });
