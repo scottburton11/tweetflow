@@ -1,19 +1,46 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title>TwitStream</title>
+    <title>TweetFlow</title>
 
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
     <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.1.7/underscore-min.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.1/backbone-min.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.0.6/modernizr.min.js"></script>
-    <script src="javascripts/application.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="javascripts/underscore-min.js"></script>
+    <script type="text/javascript" src="javascripts/backbone-min.js"></script>
+    <script type="text/javascript" src="javascripts/modernizr-min.js"></script>
+    <script type="text/javascript" src="javascripts/application.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <link rel="stylesheet" href="stylesheets/application.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <title></title>
   </head>
   <body>
-    <div id="map"></div>
-    <ul id="tweetbar"></ul>
+    <div class='topbar-wrapper'>
+      <div class='topbar'>
+        <div class='topbar-inner'>
+          <div class='container'>
+            <h3><a href="#">TweetFlow</a></h3>
+            <ul id='nav'>
+              <li><a href='#' data-location='los-angeles'>Los Angeles</a></li>
+              <li><a href='#' data-location='houston'>Houston</a></li>
+              <li><a href='#' data-location='seattle'>Seattle</a></li>
+              <li><a href='#' data-location='maui'>Maui</a></li>
+              <li><a href='#' data-location='new-york'>New York</a></li>
+              <li><a href='#' data-location='london'>London</a></li>
+              <li><a href='#' data-location='tokyo'>Tokyo</a></li>
+              <li><a href='#' data-location='hong-kong'>Hong Kong</a></li>
+              <li><a href='#'>Locate</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>      
+    </div>
+    <div id='main' class='container-fluid'>
+      <div class='sidebar'>
+        <ul id="tweetbar"></ul>
+      </div>
+      <div class='content'>
+        <div id="map"></div>
+      </div>
+    </div>
   </body>
 </html>
